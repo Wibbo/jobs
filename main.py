@@ -7,13 +7,12 @@ import csv
 
 searchItems = []
 
-
 def read_config_file(ini_file_name):
     """ Read parameters from the application config file.
     :param ini_file_name: The name of the ini file to read.
     :return: An object that represents the configuration parameters.
     """
-    try:  # Changed something.
+    try:
         params = AppConfig(ini_file_name)
     except FileNotFoundError as ff:
         print(ff)
@@ -32,26 +31,28 @@ def read_config_file(ini_file_name):
 
 
 def add_verticals(search):
-    """ Looks at the items in the general section and stores the values for each search.
-    :param search:
-    :return:
+    """ Looks at the items in the general section of the web page.
+    :param search: The object that stores search results for each technology.
+    :return: Nothing
     """
     generalTable = soup.find('table', id='Skill-Set-General')
-    generalRows = generalTable.find_all('tr')
-    index = 0
 
-    for tr in generalRows:
-        td = tr.find_all('td')
+    if generalTable != None:
+        generalRows = generalTable.find_all('tr')
+        index = 0
 
-        if index > len(generalRows) - 1:
-            break
+        for tr in generalRows:
+            td = tr.find_all('td')
 
-        if len(td) > 2:
-            if index > len(search.verticals) - 1:
+            if index > len(generalRows) - 1:
                 break
 
-            search.verticals[index] = td[2].text
-            index += 1
+            if len(td) > 2:
+                if index > len(search.verticals) - 1:
+                    break
+
+                search.verticals[index] = td[2].text
+                index += 1
 
 
 def get_job_trend(soup_ref):
@@ -67,6 +68,11 @@ def get_job_trend(soup_ref):
 
 
 def add_summary_details(soup_ref, searchObject):
+    """ Populates the search object with miscellaneous details from the web page.
+    :param soup_ref: A reference to the web page.
+    :param searchObject: The search object to the populated.
+    :return: Nothing
+    """
     summaryTable = soup_ref.find('table', class_='summary')
     summaryRows = summaryTable.find_all('tr')
 
@@ -87,6 +93,11 @@ def add_summary_details(soup_ref, searchObject):
 
 
 def create_entry_values(tech_search):
+    """Builds a list of details from the search object -
+       ready to store in a csv file.
+    :param tech_search: Search object containing web page details.
+    :return: A list of search details.
+    """
     entries = [tech_search.name, tech_search.jobPercent, tech_search.jobCount,
                tech_search.medianSalary, tech_search.salaryChange]
 
@@ -101,21 +112,23 @@ def create_entry_values(tech_search):
 cfg = read_config_file('search.ini')
 
 for url in cfg.urlList:
+    # Read details from each web page defined in the search.ini file.
     page = urllib.request.urlopen(url[1].replace(' ', '%20'))
     soup = BeautifulSoup(page, 'html.parser')
-
     searchTerm = SearchTerm(cfg.max_sectors)
 
     # Get required details from it jobs watch site & store them.
     add_verticals(searchTerm)
     searchTerm.jobImageUrl = get_job_trend(soup)
     add_summary_details(soup, searchTerm)
-
     searchItems.append(searchTerm)
 
 with open('results.csv', 'w', newline='') as csv_file:
+    # Write out search results to the results.csv file.
     writer = csv.writer(csv_file)
-    writer.writerow(['Technology', 'Job count', 'Job %', 'Salary', 'Salary change', 'Sector 1', 'Sector 2', 'Sector 3', 'Sector 4', 'Sector 5', 'Sector 6', 'Job trend graph'])
+    writer.writerow(['Technology', 'Job count', 'Job %', 'Salary',
+                     'Salary change', 'Sector 1', 'Sector 2', 'Sector 3',
+                     'Sector 4', 'Sector 5', 'Sector 6', 'Job trend graph'])
 
     for search in searchItems:
         search_entries = create_entry_values(search)
@@ -129,12 +142,4 @@ with open('results.csv', 'w', newline='') as csv_file:
 
 
 
-
-
-
-#for tr in summaryRows:
-#    td = tr.find_all('td')
-#    cols = [i.text for i in td]
-
-pass
 
