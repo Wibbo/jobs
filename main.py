@@ -126,7 +126,7 @@ for url in cfg.urlList:
 with open('results.csv', 'w', newline='') as csv_file:
     # Write out search results to the results.csv file.
     writer = csv.writer(csv_file)
-    writer.writerow(['Technology', 'Job count', 'Job %', 'Salary',
+    writer.writerow(['Technology', 'Job %', 'Job count', 'Salary',
                      'Salary change', 'Sector 1', 'Sector 2', 'Sector 3',
                      'Sector 4', 'Sector 5', 'Sector 6', 'Job trend graph'])
 
